@@ -1,0 +1,11 @@
+:root {
+    --primary-color: green;
+    --secondary-color: white;
+    --tertiary-color: black;
+    --eastern-color: blue;
+    --western-color: red;
+}
+
+h1 {
+    color: var(--primary-color);
+}
