@@ -1,10 +1,37 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const Joi = require("joi");
+const multer = require("multer");
 app.use(express.static("public"));
+app.use("/uploads", express.static("uploads"));
 app.use(cors());
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, "./public/images/");
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    },
+  });
+  
+  const upload = multer({ storage: storage });
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
+});
+
+app.post("/api/celtics", upload.single("img"), (req, res) => {
+    const result = validatePlayer(req.body);
+
+    console.log("before validate")
+    if (result.error) {
+        console.log("Invalid")
+        res.status(400).send(result.error.details[0].message);
+        return;
+    }
+    console.log("Valid")
+
 });
 
 let record = {
@@ -43,10 +70,23 @@ let record = {
     ]
   }
   
-
 app.get("/api/record", (req, res) => {
     res.send(record);
 });
+
+const validatePlayer = (player) => {
+    const schema = Joi.object({
+        _id: Joi.allow(""),
+        name: Joi.string().min(3).required (),
+        ppg: Joi.number().required (),
+        rebounds: Joi.number().required (),
+        assists: Joi.number().required (),
+        height: Joi.number().required (),
+        weight: Joi.number().required (),
+    });
+
+    return schema.validate(player);
+};
 
 app.listen(3001, () => {
     console.log("I'm listening");
