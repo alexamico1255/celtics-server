@@ -186,7 +186,7 @@ let record = {
     },
     {
         "_id": 7,
-        "img_name": "/src/images/derrick_white.jpg",
+        "img_name": "images/peyton_pritchard.jpg",
         "name": "Peyton Pritchard",
         "ppg": 9.6,
         "rebounds": 3.2,
@@ -234,21 +234,38 @@ const validatePlayer = (player) => {
         ppg: Joi.number().required (),
         rebounds: Joi.number().required (),
         assists: Joi.number().required (),
-        height: Joi.number().required (),
-        weight: Joi.number().required (),
+        height: Joi.string().required (),
+        weight: Joi.string().required (),
+        age: Joi.allow(""),
+        college: Joi.allow(""),
+        draft_pick: Joi.allow(""),
+        drafted_by: Joi.allow(""),
+
     });
 
     return schema.validate(player);
 };
 
-app.put("/api/players/:id", upload.single("image"), (req, res) => {
+app.put("/api/players/:id", upload.single("img"), (req, res) => {
   let player = players.find((e) => e._id === parseInt(req.params.id));
+
+if (!player) {
+  res.status(400).send("Player with given id was not found");
+  return;
+}
+console.log("prior to validate");
+const result = validatePlayer(req.body);
 console.log("Before validate");
-console.log("Player is " + player.name);
-  if (!player) {
-    res.status(400).send("Player with given id was not found");
+  if (result.error) {
+    console.log("validate error");
+    console.log(result.error.details[0].message);
+    res.status(400).send(result.error.details[0].message);
     return;
   }
+
+
+console.log("Player is " + player.name);
+  
 console.log("after validate");
 
       player.name = req.body.name;
@@ -266,15 +283,35 @@ console.log("after validate");
         player.img_name = "images/" + req.file.filename;
       }
 
-  const result = validatePlayer(req.body);
-
-  if (result.error) {
-    res.status(400).send(result.error.details[0].message);
-    return;
-  }
+  
 
   
   res.send("Player successfully updated");
+});
+
+app.delete("/api/players/:id", (req, res) => {
+  const house = players.find((e) => h._id === parseInt(req.params.id));
+
+  if (!house) {
+    res.status(404).send("The house with the given id was not found");
+  }
+
+  const index = players.indexOf(player);
+  players.splice(index, 1);
+  res.send(players);
+});
+
+app.delete("/api/players/:id", (req, res) => {
+  const player = players.find((e) => e._id === parseInt(req.params.id));
+
+  if (!player) {
+    res.status(404).send("The player with the given id was not found");
+    return;
+  }
+
+  const index = players.indexOf(player);
+  players.splice(index, 1);
+  res.send(players);
 });
 
 app.listen(3001, () => {
