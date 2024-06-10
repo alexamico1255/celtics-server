@@ -290,16 +290,18 @@ console.log("after validate");
 });
 
 app.delete("/api/players/:id", (req, res) => {
-  const house = players.find((e) => h._id === parseInt(req.params.id));
+  const player = players.find((e) => e._id === parseInt(req.params.id));
 
-  if (!house) {
-    res.status(404).send("The house with the given id was not found");
+  if (!player) {
+    res.status(404).send("The player with the given id was not found");
+    return;
   }
 
   const index = players.indexOf(player);
   players.splice(index, 1);
   res.send(players);
 });
+
 
 app.delete("/api/players/:id", (req, res) => {
   const player = players.find((e) => e._id === parseInt(req.params.id));
