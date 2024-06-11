@@ -6,6 +6,7 @@ const multer = require("multer");
 app.use(express.static("public"));
 app.use("/uploads", express.static("uploads"));
 app.use(cors());
+const mongoose = require("mongoose");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -21,7 +22,29 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
-app.post("/api/celtics", upload.single("img"), (req, res) => {
+mongoose
+  .connect("mongodb+srv://alexamico1255:ZAQxswCDE@atlascluster.drljrdt.mongodb.net/?retryWrites=true&w=majority&appName=AtlasCluster")
+  .then(() => console.log("Connected to mongodb..."))
+  .catch((err) => console.error("could not connect to mongodb...", err));
+
+  const playerSchema = new mongoose.Schema({
+      name: String,
+      ppg: Number,
+      rebounds: Number,
+      assists: Number,
+      height: String,
+      weight: String,
+      age: Number,
+      college: String,
+      draft_pick: String,
+      drafted_by: String,
+      img_name: String,
+  });
+
+  const Player = mongoose.model("Player", playerSchema);
+
+
+app.post("/api/celtics", upload.single("img"), async (req, res) => {
     const result = validatePlayer(req.body);
 
     console.log("before validate")
@@ -32,8 +55,7 @@ app.post("/api/celtics", upload.single("img"), (req, res) => {
     }
     console.log("Valid")
 
-    const player = {
-      _id: players.length +1,
+    const player = new Player ({
       name: req.body.name,
       ppg: req.body.ppg,
       rebounds: req.body.rebounds,
@@ -45,14 +67,16 @@ app.post("/api/celtics", upload.single("img"), (req, res) => {
       draft_pick: req.body.draft_pick,
       drafted_by: req.body.drafted_by,
     
-    };
+    });
+
+console.log (req.file.filename);
 
     if (req.file) {
       player.img_name = "images/" + req.file.filename;
     }
 
-    players.push(player);
-    res.status(200).send(player);
+    const newPlayer = await player.save();
+    res.send(newPlayer);
 
 });
 
@@ -93,134 +117,10 @@ let record = {
     ]
   }
   
- let players = [
-    {
-        "_id": 1,
-        "img_name": "images/jrue_holiday.jpg",
-        "name": "Jrue Holiday",
-        "ppg": 12.5,
-        "rebounds": 5.4,
-        "assists": 4.8,
-        "height": "6'4",
-        "weight": "205lb",
-        "age": 33,
-        "college": "UCLA",
-        "draft_pick": "R1 Pick 17",
-        "drafted_by": "Philadelphia 76ers",
-        "stats": ["12.5", "5.4", "4.8"]
-    },
-    {
-        "_id": 2,
-        "img_name": "images/derrick_white.jpg",
-        "name": "Derrick White",
-        "ppg": 15.2,
-        "rebounds": 4.2,
-        "assists": 5.2,
-        "height": "6'4",
-        "weight": "190lb",
-        "age": 29,
-        "college": "Colorado",
-        "draft_pick": "R1 Pick 29",
-        "drafted_by": "San Antonio Spurs",
-        "stats": ["15.2", "4.2", "5.2"]
-    },
-    {
-        "_id": 3,
-        "img_name": "images/jaylen_brown.jpg",
-        "name": "Jaylen Brown",
-        "ppg": 23,
-        "rebounds": 5.5,
-        "assists": 3.6,
-        "height": "6'6",
-        "weight": "223lb",
-        "age": 27,
-        "college": "California",
-        "draft_pick": "R1 Pick 3",
-        "drafted_by": "Boston Celtics",
-        "stats": ["23", "5.5", "3.6"]
-    },
-    {
-        "_id": 4,
-        "img_name": "images/jayson_tatum.jpg",
-        "name": "Jayson Tatum",
-        "ppg": 26.9,
-        "rebounds": 8.1,
-        "assists": 4.9,
-        "height": "6'8",
-        "weight": "210lb",
-        "age": 26,
-        "college": "Duke",
-        "draft_pick": "R1 Pick 3",
-        "drafted_by": "Boston Celtics",
-        "stats": ["26.9", "8.1", "4.9"]
-    },
-    {
-        "_id": 5,
-        "img_name": "images/kristaps_porzingis.jpg",
-        "name": "Kristaps Porzingis",
-        "ppg": 20.1,
-        "rebounds": 7.2,
-        "assists": 2,
-        "height": "7'2",
-        "weight": "240lb",
-        "age": 28,
-        "college": "N/A (Latvia)",
-        "draft_pick": "R1 Pick 4",
-        "drafted_by": "New York Knicks",
-        "stats": ["20.1", "7.2", "2"]
-    },
-    {
-        "_id": 6,
-        "img_name": "images/al_horford.jpg",
-        "name": "Al Horford",
-        "ppg": 18.6,
-        "rebounds": 6.4,
-        "assists": 2.6,
-        "height": "6'9",
-        "weight": "240lb",
-        "age": 37,
-        "college": "Florida",
-        "draft_pick": "R1 Pick 3",
-        "drafted_by": "Atlanta Hawks",
-        "stats": ["18.6", "6.4", "2.6"]
-    },
-    {
-        "_id": 7,
-        "img_name": "images/peyton_pritchard.jpg",
-        "name": "Peyton Pritchard",
-        "ppg": 9.6,
-        "rebounds": 3.2,
-        "assists": 3.4,
-        "height": "6'1",
-        "weight": "195lb",
-        "age": 26,
-        "college": "Oregon",
-        "draft_pick": "R1 Pick 26",
-        "drafted_by": "Boston Celtics",
-        "stats": ["9.6", "3.2", "3.4"]
-    },
-    {
-        "_id": 8,
-        "img_name": "images/sam_hauser.jpg",
-        "name": "Sam Hauser",
-        "ppg": 9.0,
-        "rebounds": 3.5,
-        "assists": 1.0,
-        "height": "6'7",
-        "weight": "217lb",
-        "age": 26,
-        "college": "Virginia",
-        "draft_pick": "Undrafted",
-        "drafted_by": "NA",
-        "stats": ["9.0", "3.5", "1.0"]
 
-        
-    }
-]
-
-
-app.get("/api/players", (req, res) => {
-  res.send(players);
+app.get("/api/players", async (req, res) => {
+const players = await Player.find();
+res.send(players);
 });
 
 app.get("/api/record", (req, res) => {
@@ -246,13 +146,36 @@ const validatePlayer = (player) => {
     return schema.validate(player);
 };
 
-app.put("/api/players/:id", upload.single("img"), (req, res) => {
-  let player = players.find((e) => e._id === parseInt(req.params.id));
+app.put("/api/players/:id", upload.single("img"), async (req, res) => {
+  const valid = validatePlayer(req.body);
 
-if (!player) {
-  res.status(400).send("Player with given id was not found");
-  return;
+  if (valid.error) {
+    res.status(400).send(result.error.details[0].message);
+    return;
+  }
+
+let fieldsToUpdate = {
+      name: req.body.name,
+      ppg: req.body.ppg,
+      rebounds: req.body.rebounds,
+      assists: req.body.assists,
+      height: req.body.height,
+      weight: req.body.weight,
+      age: req.body.age,
+      college: req.body.college,
+      draft_pick: req.body.draft_pick,
+      drafted_by: req.body.drafted_by,
+};
+
+if (req.file) {
+  fieldsToUpdate.img_name = "images/" + req.file.filename;
 }
+
+const wentThrough = await Player.updateOne(
+  { _id: req.params.id },
+  fieldsToUpdate
+);
+
 console.log("prior to validate");
 const result = validatePlayer(req.body);
 console.log("Before validate");
@@ -263,43 +186,19 @@ console.log("Before validate");
     return;
   }
 
-
-console.log("Player is " + player.name);
-  
-console.log("after validate");
-
-      player.name = req.body.name;
-      player.ppg = req.body.ppg;
-      player.rebounds = req.body.rebounds;
-      player.assists = req.body.assists;
-      player.height = req.body.height;
-      player.weight = req.body.weight;
-      player.age = req.body.age;
-      player.college = req.body.college;
-      player.draft_pick = req.body.draft_pick;
-      player.drafted_by = req.body.drafted_by;
-
-      if (req.file) {
-        player.img_name = "images/" + req.file.filename;
-      }
-
-  
-
   
   res.send("Player successfully updated");
 });
 
-app.delete("/api/players/:id", (req, res) => {
-  const player = players.find((e) => e._id === parseInt(req.params.id));
+app.delete("/api/players/:id", async (req, res) => {
+  const player = await Player.findByIdAndDelete(req.params.id);
+  res.send(player)
 
   if (!player) {
     res.status(404).send("The player with the given id was not found");
     return;
   }
 
-  const index = players.indexOf(player);
-  players.splice(index, 1);
-  res.send(players);
 });
 
 
